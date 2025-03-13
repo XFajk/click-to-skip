@@ -1,0 +1,3 @@
+[submodule "cane"]
+	path = cane
+	url = https://github.com/XFajk/cane.git
