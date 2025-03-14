@@ -1,49 +1,73 @@
-mod context;
-mod scene;
+mod player;
 
-use std::{cell::RefCell, rc::Rc};
+use std::collections::VecDeque;
 
-use context::{Context, RefContext};
+use cane::scene::*;
 use macroquad::prelude::*;
-use scene::Scene;
+use player::Player;
 
 #[macroquad::main("Click to skip")]
 async fn main() {
-    let ctx = RefContext::new();    
-    ctx.borrow_mut().scenes.insert("main_game", Box::new(MainGame::new));
+    let mut scenes: SceneQueue = VecDeque::new();
 
-    ctx.push_to_scene_stack("main_game");
+    schedule_scene(Box::new(MainGame::new));
 
     loop {
-        ctx.update();
+        let dt = get_frame_time();
 
-        for scene in ctx.borrow_mut().scene_stack.iter_mut() {
-            scene.update();
-            scene.render();
+        for scene in scenes.iter_mut() {
+            scene.update(dt);
+            scene.render(dt);
         }
 
+        scenes = scenes
+            .into_iter()
+            .filter(|scene| !scene.is_scheduled_for_removal())
+            .collect();
+
+        transfer_scheduled_scenes(&mut scenes);
+
         next_frame().await;
-    } 
+    }
 }
 
 struct MainGame {
-    ctx: Rc<RefCell<Context>>,
+    scheduled_for_removal: bool,
+    player: Player,
 }
 
 impl MainGame {
-    fn new(ctx: Rc<RefCell<Context>>) -> Box<dyn Scene> {
-        Box::new(Self{
-            ctx,
+    fn new() -> Box<dyn Scene> {
+        Box::new(Self {
+            scheduled_for_removal: false,
+            player: Player::new(Vec2::new(40.0, 40.0)),
         })
     }
 }
 
 impl Scene for MainGame {
-    fn update(&mut self) {
-        
+    fn update(&mut self, dt: f32) {
+        self.player.update(dt);
     }
 
-    fn render(&mut self) {
-        
+    fn render(&mut self, dt: f32) {
+        clear_background(Color::new(1.0, 1.0, 1.0, 1.0));
+        draw_text(
+            &format!("FPS: {}", get_fps()),
+            5.0,
+            5.0,
+            10.0,
+            Color::new(0.0, 0.0, 0.0, 1.0),
+        );
+
+        self.player.render(dt);
+    }
+
+    fn schedule_for_removal(&mut self) {
+        self.scheduled_for_removal = true
+    }
+
+    fn is_scheduled_for_removal(&self) -> bool {
+        self.scheduled_for_removal
     }
 }
