@@ -3,13 +3,15 @@ use macroquad::prelude::*;
 const SPEED: f32 = 120.0;
 
 pub struct Player {
-    body: Rect,
+    pub body: Rect,
+    texture: Texture2D,
 }
 
 impl Player {
-    pub fn new(spawn_point: Vec2) -> Self {
+    pub async fn new(spawn_point: Vec2) -> Self {
         Self {
-            body: Rect::new(spawn_point.x, spawn_point.y, 30.0, 30.0),
+            body: Rect::new(spawn_point.x, spawn_point.y, 11., 12.0),
+            texture: load_texture("./assets/textures/cursor.png").await.unwrap(),
         }
     }
 
@@ -42,12 +44,6 @@ impl Player {
     }
 
     pub fn render(&mut self, _dt: f32) {
-        draw_rectangle(
-            self.body.x.floor(),
-            self.body.y.floor(),
-            self.body.w,
-            self.body.h,
-            Color::new(1.0, 0.0, 0.0, 1.0),
-        );
+        draw_texture(&self.texture, self.body.x.floor(), self.body.y.floor(), WHITE);
     }
 }
