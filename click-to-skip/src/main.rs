@@ -1,12 +1,16 @@
 mod player;
 mod skip_button;
+mod enemies;
 
 use std::collections::VecDeque;
 
 use cane::scene::*;
+use enemies::{Enemy, ProjectileManager, ShampooEnemy};
 use macroquad::prelude::*;
 use player::Player;
 use skip_button::SkipButton;
+
+pub const RENDER_TARGET_SIZE: Vec2 = vec2(400., 300.);
 
 #[macroquad::main(window_conf)]
 async fn main() {
@@ -63,8 +67,11 @@ async fn main() {
 
 struct MainGame {
     scheduled_for_removal: bool,
+    projectile_manager: ProjectileManager,
+
     player: Player,
     skip_button: SkipButton,
+    shampoo_enemy: ShampooEnemy,
 }
 
 impl MainGame {
@@ -72,8 +79,11 @@ impl MainGame {
         let player = Player::new(vec2(40.0, 40.0)).await;
         Box::new(Self {
             scheduled_for_removal: false,
+            projectile_manager: ProjectileManager::new(),
+
             player,
             skip_button: SkipButton::new(vec2(100., 100.)).await,
+            shampoo_enemy: ShampooEnemy::new(vec2(200., 200.), vec2(70., 0.)).await,
         })
     }
 }
@@ -82,14 +92,16 @@ impl Scene for MainGame {
     fn update(&mut self, dt: f32) {
         self.player.update(dt);
         self.skip_button.update(dt, self.player.body.point());
+
+        self.shampoo_enemy.update(dt, &mut self.projectile_manager);
     }
 
     fn render(&mut self, dt: f32) {
         clear_background(DARKGRAY);
         
         self.skip_button.render(self.player.body.point());
-        self.skip_button.render(self.player.body.point());
         self.player.render(dt);
+        self.shampoo_enemy.render(dt);
     }
 
     fn schedule_for_removal(&mut self) {

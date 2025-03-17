@@ -10,7 +10,7 @@ pub struct Player {
 impl Player {
     pub async fn new(spawn_point: Vec2) -> Self {
         Self {
-            body: Rect::new(spawn_point.x, spawn_point.y, 11., 12.0),
+            body: Rect::new(spawn_point.x, spawn_point.y, 12., 18.0),
             texture: load_texture("./assets/textures/cursor.png").await.unwrap(),
         }
     }
