@@ -88,6 +88,7 @@ impl Scene for MainGame {
         clear_background(DARKGRAY);
         
         self.skip_button.render(self.player.body.point());
+        self.skip_button.render(self.player.body.point());
         self.player.render(dt);
     }
 

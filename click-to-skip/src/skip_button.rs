@@ -2,12 +2,14 @@ use macroquad::prelude::*;
 
 pub struct SkipButton {
     body: Rect,
+    texture: Texture2D,
 }
 
 impl SkipButton {
     pub async fn new(spawn_point: Vec2) -> Self {
         Self {
             body: Rect::new(spawn_point.x, spawn_point.y, 48., 16.),
+            texture: load_texture("./assets/textures/skip_button.png").await.unwrap(),
         }
     }
 
@@ -15,7 +17,7 @@ impl SkipButton {
         self.body.contains(rect)
     }
 
-    pub fn update(&self, dt: f32, cursor_point: Vec2) {
+    pub fn update(&self, _dt: f32, cursor_point: Vec2) {
         if self.is_colliding_with(cursor_point) && is_key_pressed(KeyCode::Space) {
             todo!()
         }
@@ -23,9 +25,15 @@ impl SkipButton {
 
     pub fn render(&self, cursor_point: Vec2) {
         if self.is_colliding_with(cursor_point) {
-            draw_rectangle(self.body.x, self.body.y, self.body.w, self.body.h, Color::new(0.3, 0.3, 0.3, 0.5));
+            draw_texture_ex(&self.texture, self.body.x, self.body.y, WHITE, DrawTextureParams {
+                source: Some(Rect::new(48., 0., 48., 16.)),
+                ..Default::default()
+            });
         } else {
-            draw_rectangle(self.body.x, self.body.y, self.body.w, self.body.h, Color::new(0.1, 0.1, 0.1, 0.5));
+            draw_texture_ex(&self.texture, self.body.x, self.body.y, WHITE, DrawTextureParams {
+                source: Some(Rect::new(0., 0., 48., 16.)),
+                ..Default::default()
+            });
         }
     }
 }
