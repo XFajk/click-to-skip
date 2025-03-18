@@ -5,7 +5,7 @@ mod enemies;
 use std::collections::VecDeque;
 
 use cane::scene::*;
-use enemies::{Enemy, ProjectileManager, ShampooEnemy};
+use enemies::{Enemy, ShampooEnemy};
 use macroquad::prelude::*;
 use player::Player;
 use skip_button::SkipButton;
@@ -67,7 +67,6 @@ async fn main() {
 
 struct MainGame {
     scheduled_for_removal: bool,
-    projectile_manager: ProjectileManager,
 
     player: Player,
     skip_button: SkipButton,
@@ -79,7 +78,6 @@ impl MainGame {
         let player = Player::new(vec2(40.0, 40.0)).await;
         Box::new(Self {
             scheduled_for_removal: false,
-            projectile_manager: ProjectileManager::new(),
 
             player,
             skip_button: SkipButton::new(vec2(100., 100.)).await,
@@ -92,8 +90,6 @@ impl Scene for MainGame {
     fn update(&mut self, dt: f32) {
         self.player.update(dt);
         self.skip_button.update(dt, self.player.body.point());
-
-        self.shampoo_enemy.update(dt, &mut self.projectile_manager);
     }
 
     fn render(&mut self, dt: f32) {
@@ -101,7 +97,6 @@ impl Scene for MainGame {
         
         self.skip_button.render(self.player.body.point());
         self.player.render(dt);
-        self.shampoo_enemy.render(dt);
     }
 
     fn schedule_for_removal(&mut self) {
