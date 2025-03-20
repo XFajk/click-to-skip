@@ -1,13 +1,13 @@
-mod player;
-mod skip_button;
 mod enemies;
 mod main_game;
+mod player;
+mod skip_button;
 
 use std::collections::VecDeque;
 
-use main_game::MainGame;
-use cane::scene::*;
+use cane::{management::GameObject, scene::*};
 use macroquad::prelude::*;
+use main_game::MainGame;
 
 pub const RENDER_TARGET_SIZE: Vec2 = vec2(400., 300.);
 
@@ -27,13 +27,13 @@ async fn main() {
         let dt = get_frame_time();
 
         set_camera(&camera);
-        for SceneHolder { scene, .. } in scenes.iter_mut() {
+        for GameObject { object: scene, .. } in scenes.iter_mut() {
             scene.update(dt);
             scene.render(dt);
         }
 
         set_default_camera();
- 
+
         draw_texture_ex(
             &render_target.texture,
             0.,
@@ -44,7 +44,7 @@ async fn main() {
                 ..Default::default()
             },
         );
-        
+
         draw_text(
             &format!("FPS: {}", get_fps()),
             10.0,
@@ -52,10 +52,10 @@ async fn main() {
             30.0,
             Color::new(0.0, 0.0, 0.0, 1.0),
         );
-        
+
         scenes = scenes
             .into_iter()
-            .filter(|SceneHolder{ scene, ..}| !scene.is_scheduled_for_removal())
+            .filter(|GameObject { object: scene, .. }| !scene.is_scheduled_for_removal())
             .collect();
 
         apply_modifier_to_scenes(&mut scenes);
