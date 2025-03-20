@@ -1,14 +1,13 @@
 mod player;
 mod skip_button;
 mod enemies;
+mod main_game;
 
 use std::collections::VecDeque;
 
+use main_game::MainGame;
 use cane::scene::*;
-use enemies::{Enemy, ShampooEnemy};
 use macroquad::prelude::*;
-use player::Player;
-use skip_button::SkipButton;
 
 pub const RENDER_TARGET_SIZE: Vec2 = vec2(400., 300.);
 
@@ -28,7 +27,7 @@ async fn main() {
         let dt = get_frame_time();
 
         set_camera(&camera);
-        for scene in scenes.iter_mut() {
+        for SceneHolder { scene, .. } in scenes.iter_mut() {
             scene.update(dt);
             scene.render(dt);
         }
@@ -56,55 +55,12 @@ async fn main() {
         
         scenes = scenes
             .into_iter()
-            .filter(|scene| !scene.is_scheduled_for_removal())
+            .filter(|SceneHolder{ scene, ..}| !scene.is_scheduled_for_removal())
             .collect();
 
-        transfer_scheduled_scenes(&mut scenes);
+        apply_modifier_to_scenes(&mut scenes);
 
         next_frame().await;
-    }
-}
-
-struct MainGame {
-    scheduled_for_removal: bool,
-
-    player: Player,
-    skip_button: SkipButton,
-    shampoo_enemy: ShampooEnemy,
-}
-
-impl MainGame {
-    async fn new() -> Box<dyn Scene> {
-        let player = Player::new(vec2(40.0, 40.0)).await;
-        Box::new(Self {
-            scheduled_for_removal: false,
-
-            player,
-            skip_button: SkipButton::new(vec2(100., 100.)).await,
-            shampoo_enemy: ShampooEnemy::new(vec2(200., 200.), vec2(70., 0.)).await,
-        })
-    }
-}
-
-impl Scene for MainGame {
-    fn update(&mut self, dt: f32) {
-        self.player.update(dt);
-        self.skip_button.update(dt, self.player.body.point());
-    }
-
-    fn render(&mut self, dt: f32) {
-        clear_background(DARKGRAY);
-        
-        self.skip_button.render(self.player.body.point());
-        self.player.render(dt);
-    }
-
-    fn schedule_for_removal(&mut self) {
-        self.scheduled_for_removal = true
-    }
-
-    fn is_scheduled_for_removal(&self) -> bool {
-        self.scheduled_for_removal
     }
 }
 
